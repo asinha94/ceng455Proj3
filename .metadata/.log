@@ -1,0 +1,93 @@
+!SESSION 2018-03-15 17:02:58.127 -----------------------------------------------
+eclipse.buildId=3.2.0.201603041649
+java.version=1.7.0_76
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=en_US
+Framework arguments:  -product com.somniumtech.branding.kds.ide -showlocation
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product com.somniumtech.branding.kds.ide -showlocation
+
+!ENTRY com.processorexpert.core.ide.wizard.ui 2 0 2018-03-15 17:03:14.561
+!MESSAGE External elements location C:\Freescale\KDS_v3\eclipse\ProcessorExpert\BoardConfigurations/wizard_data does not exist
+
+!ENTRY com.processorexpert.core.ide.wizard.ui 2 0 2018-03-15 17:03:43.264
+!MESSAGE External elements location C:\Freescale\KDS_v3\eclipse\ProcessorExpert\BoardConfigurations/wizard_data does not exist
+
+!ENTRY com.freescale.processorexpert.core 4 0 2018-03-15 17:04:43.892
+!MESSAGE java.util.zip.ZipException: error in opening zip file
+!STACK 0
+java.util.zip.ZipException: error in opening zip file
+	at java.util.zip.ZipFile.open(Native Method)
+	at java.util.zip.ZipFile.<init>(Unknown Source)
+	at java.util.zip.ZipFile.<init>(Unknown Source)
+	at com.processorexpert.core.internal.ComponentHeaderCacheProvider.readArchive(ComponentHeaderCacheProvider.java:91)
+	at com.processorexpert.core.internal.ComponentHeaderCacheProvider.<init>(ComponentHeaderCacheProvider.java:75)
+	at com.processorexpert.core.repositories.internal.AComponentRepository.getComponentHeaderCacheProvider(AComponentRepository.java:108)
+	at com.processorexpert.core.repositories.internal.AComponentRepository.getCacheBaseDir(AComponentRepository.java:125)
+	at com.processorexpert.core.pe.Config.loadAllUsersConfigFile(Config.java:586)
+	at com.processorexpert.core.pe.Config.getProcessorComponentDBInfo(Config.java:1732)
+	at com.processorexpert.core.pe.Config.getProcessorComponentDBInfo(Config.java:1788)
+	at com.processorexpert.core.client.ServiceConfig.getProcessorComponentDBInfo(ServiceConfig.java:55)
+	at com.processorexpert.core.repositories.internal.ProcessorComponentReference.getProcessorDBInfo(ProcessorComponentReference.java:59)
+	at com.processorexpert.core.project.TProject.create_PE_Project(TProject.java:3735)
+	at com.processorexpert.core.project.TProject.loadProjectFromStorage(TProject.java:4024)
+	at com.processorexpert.core.project.TProjectWithPEAPI.unSafe_LoadProject(TProjectWithPEAPI.java:462)
+	at com.processorexpert.core.project.TProjectWithPEAPI.command(TProjectWithPEAPI.java:796)
+	at com.processorexpert.core.client.ProjectPEclient.synchronizePEProject(ProjectPEclient.java:854)
+	at com.processorexpert.core.client.ProjectPEclient$4.run(ProjectPEclient.java:2344)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+!ENTRY com.freescale.processorexpert.core 4 0 2018-03-15 17:04:43.892
+!MESSAGE java.util.zip.ZipException: error in opening zip file
+!STACK 0
+java.util.zip.ZipException: error in opening zip file
+	at java.util.zip.ZipFile.open(Native Method)
+	at java.util.zip.ZipFile.<init>(Unknown Source)
+	at java.util.zip.ZipFile.<init>(Unknown Source)
+	at com.processorexpert.core.internal.ComponentHeaderCacheProvider.readArchive(ComponentHeaderCacheProvider.java:91)
+	at com.processorexpert.core.internal.ComponentHeaderCacheProvider.<init>(ComponentHeaderCacheProvider.java:75)
+	at com.processorexpert.core.repositories.internal.AComponentRepository.getComponentHeaderCacheProvider(AComponentRepository.java:108)
+	at com.processorexpert.core.repositories.internal.AComponentReference.loadComponentHeader(AComponentReference.java:261)
+	at com.processorexpert.core.repositories.internal.AComponentReference.getComponentHeader(AComponentReference.java:218)
+	at com.processorexpert.ui.selector.views.BeanSelectorView$ComponentHeaderLoadingJob.run(BeanSelectorView.java:2313)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:54)
+
+!ENTRY org.eclipse.cdt.core 1 0 2018-03-15 17:04:54.890
+!MESSAGE Indexed 'DDS' (0 sources, 0 headers) in 0 sec: 0 declarations; 0 references; 0 unresolved inclusions; 0 syntax errors; 0 unresolved names (0%)
+
+!ENTRY org.eclipse.ui 4 4 2018-03-15 17:08:32.651
+!MESSAGE An internal error has occurred.
+!STACK 0
+java.lang.NullPointerException
+	at com.processorexpert.ui.inspector.views.editors.TimingDialog$26$1.run(TimingDialog.java:1835)
+	at com.processorexpert.ui.progress.UIJobHelper$2.runInUIThread(UIJobHelper.java:62)
+	at org.eclipse.ui.progress.UIJob$1.run(UIJob.java:97)
+	at org.eclipse.swt.widgets.RunnableLock.run(RunnableLock.java:35)
+	at org.eclipse.swt.widgets.Synchronizer.runAsyncMessages(Synchronizer.java:136)
+	at org.eclipse.swt.widgets.Display.runAsyncMessages(Display.java:4147)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3764)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$9.run(PartRenderingEngine.java:1151)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:1032)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:148)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:636)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:332)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:579)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:150)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:135)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:134)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:104)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:380)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:235)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:648)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:603)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1465)
+
+!ENTRY org.eclipse.cdt.dsf 4 10005 2018-03-15 17:15:48.479
+!MESSAGE Request for monitor: 'RequestMonitor (org.eclipse.cdt.dsf.mi.service.MIRunControl$9@178da86): Status ERROR: org.eclipse.cdt.dsf.gdb code=10001 Context cannot be suspended. null' resulted in an error.
+!SUBENTRY 1 org.eclipse.cdt.dsf.gdb 4 10001 2018-03-15 17:15:48.479
+!MESSAGE Context cannot be suspended.

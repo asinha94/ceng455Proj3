@@ -49,40 +49,72 @@ extern "C" {
 ** ===================================================================
 */
 
-struct task_list{
+
+typedef struct task_list{
 	uint32_t tid;
 	uint32_t deadline;
 	uint32_t task_type;
 	uint32_t creation_time;
 	struct task_list *next_cell;
 	struct task_list *prev_cell;
-};
+} TASK_LIST, * TASK_LIST_PTR;
 
-struct overdue_tasks{
+typedef struct overdue_tasks{
 	uint32_t tid;
 	uint32_t deadline;
 	uint32_t task_type;
 	uint32_t creation_time;
 	struct task_list *next_cell;
 	struct task_list *prev_cell;
-};
+} OTASK_LIST, * OTASK_LIST_PTR;
 
-_pool_id dd_create_pool;
-_queue_id dd_create_queue;
+
+TASK_LIST_PTR task_list_head = NULL;
+OTASK_LIST_PTR otask_list_head = NULL;
 
 
 void task_dd(os_task_param_t task_init_data)
 {
 
-	//initialize message pool for DDCreate()
+	//initialize message POOL for DDCreate()
 
 	dd_create_pool = _msgpool_create(sizeof(CREATE_REQUEST), CREATE_MSG_POOL_SIZE,0,0);
 	if(_task_get_error() != MQX_EOK){
 		printf("create message pool not created OR error. who knows");
 	}
 
-	//initialize queue for receiving from DDCreate()
+	//initialize QUEUE for receiving from DDCreate()
 	dd_create_queue = _msgq_open(CREATE_QUEUE_ID, 0);
+	if(_task_get_error() != MQX_EOK){
+		printf("dd_create_queue queue not created OR error, who knows farm");
+	}
+
+	//Initialize POOL for receiving from DDDelete()
+	dd_delete_pool = _msgpool_create(sizeof(DELETE_REQUEST), DELETE_MSG_POOL_SIZE,0,0);
+	if(_task_get_error() != MQX_EOK){
+		printf("create message pool not created OR error. who knows");
+	}
+
+	//initialize QUEUE for receiving from DDDelete()
+	dd_delete_queue = _msgq_open(DELETE_QUEUE_ID, 0);
+	if(_task_get_error() != MQX_EOK){
+		printf("dd_create_queue queue not created OR error, who knows farm");
+	}
+
+	//Initialize RETURN message POOL
+	dd_return_pool = _msgpool_create(sizeof(RETURN_REQUEST), RETURN_MSG_POOL_SIZE,0,0);
+	if(_task_get_error() != MQX_EOK){
+		printf("create message pool not created OR error. who knows");
+	}
+
+	//initialize return active queue
+	dd_return_active_queue = _msgq_open(RETURN_ACTIVE_QUEUE_ID, 0);
+	if(_task_get_error() != MQX_EOK){
+		printf("dd_create_queue queue not created OR error, who knows farm");
+	}
+
+	//initialize return overdue queue
+	dd_return_overdue_queue = _msgq_open(RETURN_OVERDUE_QUEUE_ID, 0);
 	if(_task_get_error() != MQX_EOK){
 		printf("dd_create_queue queue not created OR error, who knows farm");
 	}
@@ -99,14 +131,145 @@ void task_dd(os_task_param_t task_init_data)
 	 //check if the CreateDD queue is empty
 	  int dd_create_queue_count = 0;
 	  dd_create_queue_count = _msgq_get_count(dd_create_queue);
+	  if(_task_get_error() != MQX_EOK){
+	    printf("dd_create_queue get count error");
+	  }
 
-	  //if its queue has a message
+	  CREATE_REQUEST_PTR create_request = _msgq_receive(dd_create_queue,0);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_create_queue message receive error");
+      }
+
+	  //check if the DeleteDD queue is empty
+	  int dd_delete_queue_count = 0;
+	  dd_delete_queue_count = _msgq_get_count(dd_delete_queue);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_delete_queue get count error");
+	  }
+
+	  DELETE_REQUEST_PTR delete_request = _msgq_receive(dd_delete_queue,0);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_delete_queue message receive error");
+	  }
+
+	  //check if the Return_ActiveDD queue is empty
+	  int dd_return_active_queue_count = 0;
+	  dd_return_active_queue_count = _msgq_get_count(dd_return_active_queue);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_delete_queue get count error");
+	  }
+
+	  RETURN_REQUEST_PTR return_active_request = _msgq_receive(dd_return_active_queue,0);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_delete_queue message receive error");
+	  }
+
+	  //check if the Return_OverdueDD queue is empty
+	  int dd_return_overdue_queue_count = 0;
+	  dd_return_overdue_queue_count = _msgq_get_count(dd_return_overdue_queue);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_overdue_queue get count error");
+	  }
+
+	  RETURN_REQUEST_PTR return_overdue_request = _msgq_receive(dd_return_overdue_queue,0);
+	  if(_task_get_error() != MQX_EOK){
+		  printf("dd_overdue_queue message receive error");
+	  }
+
+
+
+
+
+
+	  //Sort task schedule linked list based off inputs from user task
 	  if(dd_create_queue_count > 0){
+		  TASK_LIST_PTR task_list_head_temp = task_list_head;
 		  //check current tasks in task_list
 
-		  //resort tasks in task list
+		  //first time something needs to be scheduled
+		  if(task_list_head_temp == NULL){
+			  TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
 
-		  //add to task_list based on priority
+			  task_list_new->tid = create_request->tid;
+			  task_list_new->deadline = create_request->deadline;
+			  task_list_new->task_type = create_request->task_type;
+			  task_list_new->creation_time = create_request->creation_time;
+			  task_list_new->next_cell = NULL;
+			  task_list_new->prev_cell = NULL;
+			  task_list_head = task_list_new;
+		  }
+
+		  while(task_list_head_temp != NULL){
+			  //if deadline is less than
+			  if(task_list_head_temp->deadline > create_request->deadline){
+
+				  TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
+
+				  task_list_new->tid = create_request->tid;
+				  task_list_new->deadline = create_request->deadline;
+				  task_list_new->task_type = create_request->task_type;
+				  task_list_new->creation_time = create_request->creation_time;
+				  task_list_new->next_cell = task_list_head_temp;
+				  task_list_new->prev_cell = task_list_head_temp->prev_cell;
+				  task_list_head_temp->prev_cell = task_list_new;
+				  break;
+			  }
+			  //if deadline is equal to
+			  else if(task_list_head_temp->deadline == create_request->deadline){
+
+				  TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
+
+				  task_list_new->tid = create_request->tid;
+				  task_list_new->deadline = create_request->deadline;
+				  task_list_new->task_type = create_request->task_type;
+				  task_list_new->creation_time = create_request->creation_time;
+				  task_list_new->next_cell = task_list_head_temp->next_cell;
+				  task_list_new->prev_cell = task_list_head_temp;
+				  task_list_head_temp->next_cell = task_list_new;
+				  break;
+
+			  }
+			  //traverse to next node in linked list
+			  task_list_head_temp = task_list_head_temp->next_cell;
+		  }
+
+	  }
+
+	  //traverse and delete the relevant tasks from the linked list
+	  if(dd_delete_queue_count > 0){
+		  TASK_LIST_PTR task_list_head_temp = task_list_head;
+		  //check current tasks in task_list
+
+		  while(task_list_head_temp != NULL){
+			  //if tid is = to
+			  if(task_list_head_temp->tid == delete_request->tid){
+				  //remove the task from the list
+				  task_list_head_temp->next_cell->prev_cell = task_list_head_temp->prev_cell;
+				  task_list_head_temp->prev_cell->next_cell = task_list_head_temp->next_cell;
+				  break;
+			  }
+			  //traverse to next node in linked list
+			  task_list_head_temp = task_list_head_temp->next_cell;
+		  }
+	  }
+
+	  //traverse and delete the relevant tasks from the linked list
+	  if(dd_return_active_queue_count > 0){
+		  return_active_request->head = task_list_head;
+		  _msgq_send(return_active_request);
+		  if(_task_get_error() != MQX_EOK){
+			  printf("dd_return_active_queue message send error");
+		  }
+
+	  }
+
+	  //traverse and delete the relevant tasks from the linked list
+	  if(dd_return_overdue_queue_count > 0){
+		  return_overdue_request->head = task_list_head;
+		  _msgq_send(return_overdue_request);
+		  if(_task_get_error() != MQX_EOK){
+			  printf("dd_return_overdue_queue message send error");
+		  }
 
 	  }
 

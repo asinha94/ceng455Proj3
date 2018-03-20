@@ -46,57 +46,47 @@
 extern "C" {
 #endif 
 
-//MESSAGE POOL IDs
+//Message Pool Sizes
 #define CREATE_MSG_POOL_SIZE 32
 #define DELETE_MSG_POOL_SIZE 32
 #define RETURN_MSG_POOL_SIZE 32
 
+// Message Pool IDs
+extern _pool_id dd_create_pool;
+extern _pool_id dd_delete_pool;
+extern _pool_id dd_return_pool;
+
 //QUEUE IDs
-#define CREATE_QUEUE_ID 1
-#define DELETE_QUEUE_ID 2
-#define RETURN_ACTIVE_QUEUE_ID 3
+#define CREATE_QUEUE_ID 		1
+#define DELETE_QUEUE_ID 		2
+#define RETURN_ACTIVE_QUEUE_ID 	3
 #define RETURN_OVERDUE_QUEUE_ID 4
 
-//TASK IDs
-
-
-_pool_id dd_create_pool;
-_queue_id dd_create_queue;
-
-_pool_id dd_delete_pool;
-_queue_id dd_delete_queue;
-
-_pool_id dd_return_pool;
-_queue_id dd_return_active_queue;
-_queue_id dd_return_overdue_queue;
-
-
+typedef struct task_list{
+	uint32_t tid;
+	uint32_t task_type;
+	TIME_STRUCT creation_time;
+	uint32_t deadline;
+	struct task_list *next;
+} TASK_LIST, * TASK_LIST_PTR;
 
 typedef struct create_request {
 	MESSAGE_HEADER_STRUCT HEADER;
 	_task_id tid;
-	uint32_t deadline;
 	uint32_t task_type;
-	uint32_t creation_time;
-
+	TIME_STRUCT creation_time;
+	uint32_t deadline;
 }	CREATE_REQUEST, * CREATE_REQUEST_PTR;
 
 typedef struct delete_request {
 	MESSAGE_HEADER_STRUCT HEADER;
 	_task_id tid;
-	uint32_t deadline;
-	uint32_t task_type;
-	uint32_t creation_time;
-
 }	DELETE_REQUEST, * DELETE_REQUEST_PTR;
 
 typedef struct return_request {
 	MESSAGE_HEADER_STRUCT HEADER;
-	struct task_list * head;
-
+	TASK_LIST_PTR list;
 }	RETURN_REQUEST, * RETURN_REQUEST_PTR;
-
-
 
 
 /*

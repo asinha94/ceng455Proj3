@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-15, 17:12, # CodeGen: 1
+**     Date/Time   : 2018-03-22, 19:14, # CodeGen: 5
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -59,6 +59,8 @@
 #include "os_tasks.h"
 #include "MainTask.h"
 #include "DD.h"
+#include "MonitorTask.h"
+#include "ptask.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -89,6 +91,28 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Stack size                     */  DD_TASK_STACK_SIZE,
     /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(DD_TASK_PRIORITY)),
     /* Task name                      */  DD_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: MonitorTask */
+  {
+    /* Task number                    */  MONITORTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)monitor_task,
+    /* Stack size                     */  MONITORTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(MONITORTASK_TASK_PRIORITY)),
+    /* Task name                      */  MONITORTASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: ptask */
+  {
+    /* Task number                    */  PTASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)p_task,
+    /* Stack size                     */  PTASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PTASK_TASK_PRIORITY)),
+    /* Task name                      */  PTASK_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)

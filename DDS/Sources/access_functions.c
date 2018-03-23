@@ -71,7 +71,7 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t deadline) {
 			}
 
 			// Task set to 0 if we got any errors
-			new_task_id = msg_recv_ptr->create_task_id;
+			new_task_id = msg_recv_ptr->tid;
 
 			_msg_free(msg_recv_ptr);
 			if (_task_get_error() != MQX_EOK) {
@@ -165,7 +165,7 @@ uint32_t dd_delete(_task_id delete_task_id) {
 
 uint32_t dd_return_active_list(TASK_LIST_PTR * active_tasks) {
 	int success = TRUE;
-	_queue_id queue_id = _msgq_open(current_task_id, 0);
+	_queue_id queue_id = _msgq_open(_task_get_id(), 0);
 	if (_task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Failed to open MSGQ for getting active list. Error: 0x%x",  _task_get_id(), _task_get_error());
 		task_set_error(MQX_OK);
@@ -238,7 +238,7 @@ uint32_t dd_return_active_list(TASK_LIST_PTR * active_tasks) {
 
 uint32_t dd_return_overdue_list(TASK_LIST_PTR * overdue_tasks) {
 	int success = TRUE;
-	_queue_id queue_id = _msgq_open(current_task_id, 0);
+	_queue_id queue_id = _msgq_open(_task_get_id(), 0);
 	if (_task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Failed to open MSGQ for getting active list. Error: 0x%x",  _task_get_id(), _task_get_error());
 		task_set_error(MQX_OK);

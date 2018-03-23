@@ -40,6 +40,8 @@
 #include "fsl_hwtimer1.h"
 #include "MainTask.h"
 #include "DD.h"
+#include "MonitorTask.h"
+#include "ptask.h"
 #include <message.h>
 
 #ifdef __cplusplus
@@ -50,17 +52,22 @@ extern "C" {
 #define CREATE_MSG_POOL_SIZE 32
 #define DELETE_MSG_POOL_SIZE 32
 #define RETURN_MSG_POOL_SIZE 32
+#define FINISHED_MSG_POOL_SIZE 32
 
 // Message Pool IDs
-extern _pool_id dd_create_pool;
-extern _pool_id dd_delete_pool;
-extern _pool_id dd_return_pool;
+ _pool_id dd_create_pool;
+ _pool_id dd_delete_pool;
+ _pool_id dd_return_pool;
+ _pool_id dd_finished_pool;
 
 //QUEUE IDs
 #define CREATE_QUEUE_ID 		1
 #define DELETE_QUEUE_ID 		2
 #define RETURN_ACTIVE_QUEUE_ID 	3
 #define RETURN_OVERDUE_QUEUE_ID 4
+#define FINISHED_QUEUE_ID 		5
+
+#define TASK_STARTING_PRIORITY 10
 
 typedef struct task_list{
 	uint32_t tid;
@@ -68,7 +75,8 @@ typedef struct task_list{
 	TIME_STRUCT creation_time;
 	uint32_t deadline;
 	struct task_list *next;
-} TASK_LIST, * TASK_LIST_PTR;
+	struct task_list *prev;
+} TASK_LIST, * TASK_LIST_PTR, OTASK_LIST, * OTASK_LIST_PTR;
 
 typedef struct create_request {
 	MESSAGE_HEADER_STRUCT HEADER;
@@ -88,6 +96,12 @@ typedef struct return_request {
 	TASK_LIST_PTR list;
 }	RETURN_REQUEST, * RETURN_REQUEST_PTR;
 
+typedef struct task_finished {
+	MESSAGE_HEADER_STRUCT HEADER;
+	_task_id tid;
+	TIME_STRUCT finish_time;
+}	TASK_FINISHED, * TASK_FINISHED_PTR;
+
 
 /*
 ** ===================================================================
@@ -100,6 +114,28 @@ typedef struct return_request {
 */
 void task_dd(os_task_param_t task_init_data);
 
+
+/*
+** ===================================================================
+**     Callback    : monitor_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void monitor_task(os_task_param_t task_init_data);
+
+/*
+** ===================================================================
+**     Callback    : p_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void p_task(os_task_param_t task_init_data);
 
 /* END os_tasks */
 

@@ -40,6 +40,8 @@
 #include "fsl_hwtimer1.h"
 #include "MainTask.h"
 #include "DD.h"
+#include "MonitorTask.h"
+#include "ptask.h"
 
 #ifdef __cplusplus
 extern "C" {

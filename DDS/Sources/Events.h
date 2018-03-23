@@ -42,6 +42,7 @@
 #include "DD.h"
 #include "MonitorTask.h"
 #include "ptask.h"
+#include "PeriodicTask.h"
 
 #ifdef __cplusplus
 extern "C" {

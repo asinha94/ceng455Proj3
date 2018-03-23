@@ -279,6 +279,9 @@ Module "MonitorTask" (component OS_Task)
 Module "ptask"     (component OS_Task)
    - ptask_Init -Creates and starts a task.
 
+Module "PeriodicTask" (component OS_Task)
+   - PeriodicTask_Init -Creates and starts a task.
+
 Module "Cpu"       (component MK64FN1M0LL12_4SDK)
    - Cpu_SystemInit -This method configures the oscillator (PLL) that is part of the microcontroller device. SystemInit is 
                 called from startup_device file.

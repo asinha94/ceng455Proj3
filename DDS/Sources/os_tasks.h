@@ -42,6 +42,7 @@
 #include "DD.h"
 #include "MonitorTask.h"
 #include "ptask.h"
+#include "PeriodicTask.h"
 #include <message.h>
 
 #ifdef __cplusplus
@@ -136,6 +137,17 @@ void monitor_task(os_task_param_t task_init_data);
 ** ===================================================================
 */
 void p_task(os_task_param_t task_init_data);
+
+/*
+** ===================================================================
+**     Callback    : Periodic_Task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void Periodic_Task(os_task_param_t task_init_data);
 
 /* END os_tasks */
 

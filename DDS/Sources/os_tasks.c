@@ -389,6 +389,35 @@ void monitor_task(os_task_param_t task_init_data)
 */
 void p_task(os_task_param_t task_init_data)
 {
+
+
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+    
+    OSA_TimeDelay(10);                 /* Example code (for task release) */
+   
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
+}
+
+/*
+** ===================================================================
+**     Callback    : Periodic_Task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void Periodic_Task(os_task_param_t task_init_data)
+{
   /* Write your local variable definition here */
   
 #ifdef PEX_USE_RTOS

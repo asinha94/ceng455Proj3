@@ -43,6 +43,7 @@
 #include "DD.h"
 #include "MonitorTask.h"
 #include "ptask.h"
+#include "PeriodicTask.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif

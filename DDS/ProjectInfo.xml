@@ -116,6 +116,7 @@
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\DD.c</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\MainTask.c</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\MonitorTask.c</PathName>
+      <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\PeriodicTask.c</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\clockMan1.c</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\fsl_hwtimer1.c</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\fsl_mpu1.c</PathName>
@@ -266,6 +267,7 @@
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\MainTask.h</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\MonitorTask.h</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\PE_low_level_init.h</PathName>
+      <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\PeriodicTask.h</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\SDK\platform\devices\MK64F12\startup\system_MK64F12.h</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\SDK\rtos\mqx\config\board\user_config.h</PathName>
       <PathName>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\Generated_Code\SDK\rtos\mqx\config\mcu\mqx_sdk_config.h</PathName>

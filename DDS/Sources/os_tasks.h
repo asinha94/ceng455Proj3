@@ -50,15 +50,15 @@ extern "C" {
 #endif 
 
 //Message Pool Sizes
-#define CREATE_MSG_POOL_SIZE 32
-#define DELETE_MSG_POOL_SIZE 32
+#define CREATE_MSG_POOL_SIZE 128
+#define DELETE_MSG_POOL_SIZE 128
 #define RETURN_MSG_POOL_SIZE 32
 #define FINISHED_MSG_POOL_SIZE 32
 
 // Message Pool IDs
- _pool_id dd_create_pool;
+ _pool_id dd_create_or_finished_pool;
+ _pool_id dd_return_or_delete_pool;
  _pool_id dd_delete_pool;
- _pool_id dd_return_pool;
  _pool_id dd_finished_pool;
 
 //QUEUE IDs

@@ -51,15 +51,37 @@ extern "C" {
 
 static TASK_LIST_PTR task_list_head = NULL;
 static OTASK_LIST_PTR otask_list_head = NULL;
+int count = 0;
 
 bool remove_from_task_list(_task_id tid, bool overdue) {
+	printf("\r\n Remove From Task List ID: %i bool: %i \r\n", tid, overdue);
 	TASK_LIST_PTR task_list_head_temp = task_list_head;
-	//check current tasks in task_list
-
+	//count--;
 	while(task_list_head_temp != NULL){
 		//if tid is = to
 		if(task_list_head_temp->tid == tid){
 			//remove the task from the list
+
+			//CASE 1: Only 1 node in linked list
+			if (task_list_head_temp->next == NULL && task_list_head_temp->prev == NULL) {
+				task_list_head = NULL;
+				break;
+			}
+
+			//CASE 2: Removing last item in linked list
+			if (task_list_head_temp->next == NULL && task_list_head_temp->prev != NULL) {
+				task_list_head_temp->prev->next = NULL;
+				break;
+			}
+
+			//CASE 3: Removing First item in linked list
+			if (task_list_head_temp->next != NULL && task_list_head_temp->prev == NULL) {
+				task_list_head_temp->next->prev = NULL;
+				task_list_head = task_list_head_temp->next;
+				break;
+			}
+
+
 			task_list_head_temp->next->prev = task_list_head_temp->prev;
 			task_list_head_temp->prev->next = task_list_head_temp->next;
 			_task_destroy(tid);
@@ -121,39 +143,43 @@ void task_dd(os_task_param_t task_init_data)
 
 
 	// Initialize Message Pools
-	dd_create_pool = _msgpool_create(sizeof(CREATE_REQUEST), CREATE_MSG_POOL_SIZE,0,0);
+
+	dd_create_or_finished_pool = _msgpool_create(sizeof(CREATE_REQUEST), CREATE_MSG_POOL_SIZE,0,0);
 	if(_task_get_error() != MQX_EOK){
 		printf("\r\n[%d] Couldn't create task_create_msg_pool. Error: 0x%x", _task_get_id(), _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
 
-	dd_delete_pool = _msgpool_create(sizeof(DELETE_REQUEST), DELETE_MSG_POOL_SIZE,0,0);
+
+	dd_return_or_delete_pool = _msgpool_create(sizeof(RETURN_REQUEST), RETURN_MSG_POOL_SIZE,0,0);
 	if(_task_get_error() != MQX_EOK){
-		printf("\r\n[%d] Couldn't create task_delete_msg_pool. Error: 0x%x", _task_get_id());
+		printf("\r\n[%d] Couldn't create task_return_msg_pool. Error: 0x%x", _task_get_id(), _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
 
-	dd_return_pool = _msgpool_create(sizeof(RETURN_REQUEST), RETURN_MSG_POOL_SIZE,0,0);
+	/*
+	dd_delete_pool = _msgpool_create(sizeof(DELETE_REQUEST), DELETE_MSG_POOL_SIZE,0,0);
 	if(_task_get_error() != MQX_EOK){
-		printf("\r\n[%d] Couldn't create task_return_msg_pool. Error: 0x%x", _task_get_id());
+		printf("\r\n[%d] Couldn't create task_delete_msg_pool. Error: 0x%x", _task_get_id(), _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
 
 	dd_finished_pool = _msgpool_create(sizeof(TASK_FINISHED), FINISHED_MSG_POOL_SIZE,0,0);
 	if(_task_get_error() != MQX_EOK){
-		printf("\r\n[%d] Couldn't create task_finished_msg_pool. Error: 0x%x", _task_get_id());
+		printf("\r\n[%d] Couldn't create task_finished_msg_pool. Error: 0x%x", _task_get_id(), _task_get_error());
 		_task_set_error(MQX_OK);
 		_task_block();
 	}
-
+	*/
   
 #ifdef PEX_USE_RTOS
   	while (1) {
 #endif
 
+  		//linked list counter
 
 		// Msg counts for any of the queues
 		int dd_create_queue_count = 0;
@@ -168,6 +194,11 @@ void task_dd(os_task_param_t task_init_data)
 			printf("\r\n[%d] Failed to get count of create queue. Error: 0x%x", _task_get_id(), _task_get_error());
 			_task_set_error(MQX_OK);
 		}
+
+
+		printf("Create Queue Count: %i \n\r", dd_create_queue_count);
+
+
 
 		dd_delete_queue_count = _msgq_get_count(dd_delete_queue);
 		if(dd_delete_queue_count == 0 && _task_get_error() != MQX_EOK){
@@ -193,79 +224,104 @@ void task_dd(os_task_param_t task_init_data)
 			_task_set_error(MQX_OK);
 		}
 
+
 		//Sort task schedule linked list based off inputs from user task
 		if(dd_create_queue_count > 0){
 
-			CREATE_REQUEST_PTR create_request = _msgq_receive(dd_create_queue,0);
+			count++;
+			printf("\r\nCreate LL Count: %i\r\n", count);
+
+
+			//printf("1_1_1 \r\n");
+			CREATE_REQUEST_PTR create_request = _msgq_receive(dd_create_queue, 0);
 			if(_task_get_error() != MQX_EOK){
 				printf("dd_create_queue message receive error");
 			}
+			//printf("1_1_2 \r\n");
 
 			TASK_LIST_PTR task_list_head_temp = task_list_head;
 			//check current tasks in task_list
+			//create_request->HEADER.TARGET_QID = create_request->HEADER.SOURCE_QID;
+			//create_request->HEADER.SOURCE_QID = dd_create_queue;
+
 
 			//first time something needs to be scheduled
-			if(task_list_head_temp == NULL){
-				TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
+			TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
+			task_list_new->tid = create_request->tid;
+			task_list_new->deadline = create_request->deadline;
+			task_list_new->task_type = create_request->task_type;
+			task_list_new->creation_time = create_request->creation_time;
+			_msg_free(create_request);
 
-				task_list_new->tid = create_request->tid;
-				task_list_new->deadline = create_request->deadline;
-				task_list_new->task_type = create_request->task_type;
-				task_list_new->creation_time = create_request->creation_time;
+			if(task_list_head_temp == NULL){
 				task_list_new->next = NULL;
 				task_list_new->prev = NULL;
 				task_list_head = task_list_new;
 			}
 
+		//	printf("1_1_3 \r\n");
+
 			while(task_list_head_temp != NULL){
 				//if deadline is less than
 				if(task_list_head_temp->deadline > create_request->deadline){
+					//last node
+					if(task_list_head_temp->next == NULL && task_list_head_temp->prev != NULL){
+						task_list_new->next = task_list_head_temp;
+						task_list_new->prev = task_list_head_temp->prev;
+						task_list_head_temp->prev->next = task_list_new;
+						task_list_head_temp->prev = task_list_new;
+						break;
 
-					TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
+					}
+					//between nodes
+					else if(task_list_head_temp->next != NULL && task_list_head_temp->prev != NULL){
+						task_list_new->next = task_list_head_temp;
+						task_list_new->prev = task_list_head_temp->prev;
+						task_list_head_temp->prev->next = task_list_new;
+						task_list_head_temp->prev = task_list_new;
+						break;
 
-					task_list_new->tid = create_request->tid;
-					task_list_new->deadline = create_request->deadline;
-					task_list_new->task_type = create_request->task_type;
-					task_list_new->creation_time = create_request->creation_time;
-					task_list_new->next = task_list_head_temp;
-					task_list_new->prev = task_list_head_temp->prev;
-					task_list_head_temp->prev = task_list_new;
-					break;
-				}
-				//if deadline is equal to
-				else if(task_list_head_temp->deadline == create_request->deadline){
+					}
+					//first node
+					else if(task_list_head_temp->next != NULL && task_list_head_temp->prev == NULL){
+						task_list_new->next = task_list_head_temp;
+						task_list_new->prev = NULL;
+						task_list_head_temp->prev = task_list_new;
+						break;
 
-					TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
-
-					task_list_new->tid = create_request->tid;
-					task_list_new->deadline = create_request->deadline;
-					task_list_new->task_type = create_request->task_type;
-					task_list_new->creation_time = create_request->creation_time;
-					task_list_new->next = task_list_head_temp->next;
-					task_list_new->prev = task_list_head_temp;
-					task_list_head_temp->next = task_list_new;
-					break;
-
+					}
 				}
 				//traverse to next node in linked list
 				task_list_head_temp = task_list_head_temp->next;
+				OSA_TimeDelay(10);
 			}
+
+			//printf("1_1_4 \r\n");
 
 		}
 
-
+		//printf("1_1_5 \r\n");
 		if (task_list_head != NULL) {
 			TIME_STRUCT current_time;
 			_time_get(&current_time);
+			/*
 			MQX_TICK_STRUCT rel_deadline_in_ticks;
 			rel_deadline_in_ticks.HW_TICKS = task_list_head->deadline;
 			TIME_STRUCT rel_deadline_in_ms;
 			uint32_t relative_deadline = _ticks_to_time(&rel_deadline_in_ticks, &rel_deadline_in_ms);
+			printf("1_1_5_1 \r\n");
 			uint32_t absolute_deadline_in_ms = task_list_head->creation_time.MILLISECONDS + rel_deadline_in_ms.MILLISECONDS;
-			if (absolute_deadline_in_ms > current_time.MILLISECONDS) {
+			printf("1_1_5_2 \r\n");
+			*/
+			uint32_t abs_deadline = task_list_head->creation_time.MILLISECONDS +  task_list_head->deadline;
+			if (abs_deadline > current_time.MILLISECONDS) {
 				remove_from_task_list(task_list_head->tid, 1);
+				printf("1_1_5_3 \r\n");
 			}
+			//printf("1_1_4_4 \r\n");
 		}
+
+		//printf("1_1_6 \r\n");
 
 
 		//traverse and delete the relevant tasks from the linked list
@@ -280,6 +336,8 @@ void task_dd(os_task_param_t task_init_data)
 
 		}
 
+	//	printf("1_1_7 \r\n");
+
 		while (dd_task_finished_queue_count > 0) {
 			TASK_FINISHED_PTR finish_request = _msgq_receive(dd_task_finished_queue,0);
 			if(_task_get_error() != MQX_EOK){
@@ -288,8 +346,12 @@ void task_dd(os_task_param_t task_init_data)
 			}
 
 			remove_from_task_list(finish_request->tid, 1);
+			_msg_free(finish_request);
 			dd_task_finished_queue_count--;
+			OSA_TimeDelay(10);
 		}
+
+		//printf("1_1_8 \r\n");
 
 		//Set the priority of the leading task
 		if(dd_create_queue_count > 0){
@@ -306,22 +368,33 @@ void task_dd(os_task_param_t task_init_data)
 						task_list_head_temp = task_list_head_temp->next;
 						priority++;
 					}
+
+
 		}
+
+		//printf("1_1_9 \r\n");
 
 		//traverse and delete the relevant tasks from the linked list
 		if(dd_return_active_queue_count > 0){
+			printf("\r\n 1_3_1 \r\n");
 			RETURN_REQUEST_PTR return_active_request = _msgq_receive(dd_return_active_queue,0);
 			if(_task_get_error() != MQX_EOK){
 				printf("dd_delete_queue message receive error");
 			}
-
-			return_active_request->list = task_list_head;
+			printf("\r\n 1_3_2 \r\n");
+			return_active_request->HEADER.TARGET_QID = return_active_request->HEADER.SOURCE_QID;
+			return_active_request->HEADER.SOURCE_QID = dd_return_active_queue;
+			return_active_request->list = &task_list_head;
 			_msgq_send(return_active_request);
 			if(_task_get_error() != MQX_EOK){
 				printf("dd_return_active_queue message send error");
 			}
+			printf("\r\n 1_3_3 \r\n");
 
 		}
+
+		//printf("1_1_10 \r\n");
+
 
 		//traverse and delete the relevant tasks from the linked list
 		if(dd_return_overdue_queue_count > 0){
@@ -338,6 +411,11 @@ void task_dd(os_task_param_t task_init_data)
 			}
 
 		}
+
+		//printf("1_1_11 \r\n");
+		OSA_TimeDelay(100);
+
+
 
 #ifdef PEX_USE_RTOS   
   }
@@ -390,6 +468,16 @@ void monitor_task(os_task_param_t task_init_data)
 void p_task(os_task_param_t task_init_data)
 {
 
+	_queue_id queue_id = _msgq_open(15, 0);
+	if (_task_get_error() != MQX_EOK) {
+		printf("\r\n[%d] Failed to open MSGQ for creating task. Error: 0x%x", _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+	printf("\r\n[%d]Created Queue %d", _task_get_id(), queue_id);
+
+	int tasks = 0;
+	TASK_LIST_PTR active_list = NULL;
 
 #ifdef PEX_USE_RTOS
   while (1) {
@@ -397,9 +485,31 @@ void p_task(os_task_param_t task_init_data)
     /* Write your code here ... */
     
     
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
-   
+                    /* Example code (for task release) */
+	//printf("\r\n Create Periodic Task");
+
+	dd_tcreate(PERIODICTASK_TASK, 10);
+	tasks++;
+    //printf("1_3 \r\n");
     
+	if (tasks == 10) {
+		tasks = 0;
+		//printf("return Active List FUNCTION ONION");
+		dd_return_active_list(&active_list);
+		printf("\r\nGot Active List farm");
+		int ll_length = 0;
+		while (active_list != NULL) {
+			printf("\r\nStill iterating");
+			ll_length++;
+			active_list = active_list->next;
+			printf("\r\nTID == %i", active_list->tid);
+			OSA_TimeDelay(1);
+		}
+		printf("\r\nDone iterating");
+		printf("\r\n Active Tasks List length = %d", ll_length);
+		}
+
+	OSA_TimeDelay(100);
     
     
 #ifdef PEX_USE_RTOS   
@@ -419,21 +529,43 @@ void p_task(os_task_param_t task_init_data)
 void Periodic_Task(os_task_param_t task_init_data)
 {
   /* Write your local variable definition here */
-  
-#ifdef PEX_USE_RTOS
-  while (1) {
-#endif
-    /* Write your code here ... */
-    
-    
-    OSA_TimeDelay(10);                 /* Example code (for task release) */
-   
-    
-    
-    
-#ifdef PEX_USE_RTOS   
-  }
-#endif    
+
+	//printf("1 \r\n");
+	OSA_TimeDelay(task_init_data);
+	//printf("\r\n[%d] periodic task", _task_get_id());
+	_queue_id dd_task_finished_queue = _msgq_open(_task_get_id(), 0);
+	if(_task_get_error() != MQX_EOK){
+		printf("\r\n[%d] dd_task_finished_queue queue not created. Error: 0x%x", _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		_task_block();
+	}
+
+	// Send msg to the scheduler
+	TASK_FINISHED_PTR msg_send_ptr = (TASK_FINISHED_PTR) _msg_alloc(dd_create_or_finished_pool);
+	if (_task_get_error() != MQX_EOK) {
+		printf("\r\n[%d] Failed to Allocate task finished msg. Error: 0x%x", _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+
+	TIME_STRUCT finish_time;
+	_time_get(&finish_time);
+
+	msg_send_ptr->HEADER.SOURCE_QID=dd_task_finished_queue;
+	msg_send_ptr->HEADER.TARGET_QID= _msgq_get_id(0, FINISHED_QUEUE_ID);
+	msg_send_ptr->tid = _task_get_id();
+	msg_send_ptr->finish_time = finish_time;
+
+	_msgq_send(msg_send_ptr);
+	if (_task_get_error() != MQX_EOK) {
+		printf("\r\n[%d] Failed to finished task msg to DD. Error: 0x%x", _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		return FALSE;
+	}
+
+	printf("\r\n[%d] Finished Periodic Task", _task_get_id());
+	OSA_TimeDelay(10);
+	return;
 }
 
 /* END os_tasks */

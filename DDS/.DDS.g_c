@@ -2,7 +2,7 @@
 <GenerationInfo_G_C>
   <Options>
     <ProjectName>DDS</ProjectName>
-    <ProjectDirectory>\\samba4.engr.uvic.ca\asinha\Downloads\ceng455Proj3\DDS\</ProjectDirectory>
+    <ProjectDirectory>C:\Users\asinha.UVIC\Downloads\ceng455Proj3\DDS\</ProjectDirectory>
     <ProjectMainModuleName>main</ProjectMainModuleName>
     <DestEventsDirectory>Sources\</DestEventsDirectory>
     <DestDriversSubDirectory>..\Generated_Code\</DestDriversSubDirectory>

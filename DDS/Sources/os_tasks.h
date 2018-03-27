@@ -56,10 +56,7 @@ extern "C" {
 #define FINISHED_MSG_POOL_SIZE 32
 
 // Message Pool IDs
- _pool_id dd_create_or_finished_pool;
- _pool_id dd_return_or_delete_pool;
- _pool_id dd_delete_pool;
- _pool_id dd_finished_pool;
+ _pool_id dd_message_pool;
 
 //QUEUE IDs
 #define CREATE_QUEUE_ID 		1
@@ -73,36 +70,13 @@ extern "C" {
 typedef struct task_list{
 	uint32_t tid;
 	uint32_t task_type;
-	TIME_STRUCT creation_time;
-	uint32_t deadline;
+	uint32_t absdeadline;
 	struct task_list *next;
-	struct task_list *prev;
-} TASK_LIST, * TASK_LIST_PTR, OTASK_LIST, * OTASK_LIST_PTR;
+	//struct task_list *prev;
+} TASK_LIST, * TASK_LIST_PTR;
 
-typedef struct create_request {
-	MESSAGE_HEADER_STRUCT HEADER;
-	_task_id tid;
-	uint32_t task_type;
-	TIME_STRUCT creation_time;
-	uint32_t deadline;
-}	CREATE_REQUEST, * CREATE_REQUEST_PTR;
-
-typedef struct delete_request {
-	MESSAGE_HEADER_STRUCT HEADER;
-	_task_id tid;
-}	DELETE_REQUEST, * DELETE_REQUEST_PTR;
-
-typedef struct return_request {
-	MESSAGE_HEADER_STRUCT HEADER;
-	TASK_LIST_PTR list;
-}	RETURN_REQUEST, * RETURN_REQUEST_PTR;
-
-typedef struct task_finished {
-	MESSAGE_HEADER_STRUCT HEADER;
-	_task_id tid;
-	TIME_STRUCT finish_time;
-}	TASK_FINISHED, * TASK_FINISHED_PTR;
-
+extern _task_id add_task_to_list(_task_id, uint32_t);
+extern bool remove_from_task_list(_task_id);
 
 /*
 ** ===================================================================

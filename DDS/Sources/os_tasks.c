@@ -74,7 +74,7 @@ static void add_task_to_overdue_list(TASK_LIST_PTR task) {
 	printf("\r\nI am Overdue");
 }
 
-_task_id add_task_to_list(_task_id tid, uint32_t deadline) {
+_task_id add_task_to_list(_task_id tid, uint32_t deadline, uint32_t execution_time) {
 	int mut_error = _mutex_lock(&active_task_mutex);
 	if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
@@ -85,6 +85,7 @@ _task_id add_task_to_list(_task_id tid, uint32_t deadline) {
 	TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
 	task_list_new->tid = tid;
 	task_list_new->absdeadline = deadline;
+	task_list_new->execution_time = execution_time;
 	task_list_new->task_type = 0;
 	task_list_new->next = NULL;
 	//task_list_new->prev = NULL;
@@ -186,6 +187,7 @@ bool remove_from_task_list(_task_id tid) {
 
 void task_dd(os_task_param_t task_init_data)
 {
+	printf("starting task DD");
 
 	// Initialize Mutexes to default values
 	MUTEX_ATTR_STRUCT mutextattr;
@@ -200,16 +202,28 @@ void task_dd(os_task_param_t task_init_data)
 	if (_mutex_init(&overdue_task_mutex, &mutextattr) != MQX_EOK) {
 		printf("\r\n[%d] Couldn't Init overdue mutex", _task_get_id());
 	}
-/*
-	if (_mutex_init(&task_exec_mutex, &mutextattr) != MQX_EOK) {
-		printf("\r\n[%d] Couldn't Init overdue mutex", _task_get_id());
+
+	_queue_id task_finished_queue = _msgq_open(FINISHED_QUEUE_ID, 0);
+	if (_task_get_error() != MQX_EOK) {
+		printf("\r\n[%d] failed to create Scheduler Finished Queue. Error: 0x%x",  _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		_task_block();
 	}
-*/
+
+	// create msg pool for task finished
+	dd_message_pool = _msgpool_create(sizeof(TASK_FINISHED), FINISHED_MSG_POOL_SIZE, 0, 0);
+	if (_task_get_error() != MQX_EOK) {
+		printf("\r\n[%d] failed to Open Message Pool for task finished. nError 0x%x", _task_get_id(), _task_get_error());
+		_task_set_error(MQX_OK);
+		_task_block();
+	}
+
+	printf("\r\nStarting Scheduler");
 
 #ifdef PEX_USE_RTOS
   	while (1) {
 #endif
-
+  		printf("\r\nIn A loop");
   		/*
 		//Set the priority of the leading task
 		int mut_error = _mutex_lock(&active_task_mutex);
@@ -295,6 +309,8 @@ void monitor_task(os_task_param_t task_init_data)
 */
 void p_task(os_task_param_t task_init_data)
 {
+	return;
+	printf("\r\nStarting Periodic Task");
 
 #ifdef PEX_USE_RTOS
   while (1) {
@@ -320,8 +336,30 @@ void p_task(os_task_param_t task_init_data)
 */
 void Periodic_Task(os_task_param_t task_init_data)
 {
-	OSA_TimeDelay(task_init_data);
-	dd_delete(_task_get_id());
+
+	TIME_STRUCT start_time;
+	_time_get(&start_time);
+
+	int ticker = 0;
+/*
+	do {
+		TIME_STRUCT current_time;
+		_time_get(current_time);
+
+	} while (current_time.MILLISECONDS < task_init_data);
+*/
+	int loops = 100000000;
+	for (int i = 0; i < loops; i++) {
+		int a = 1;
+		a++;
+	}
+
+	TIME_STRUCT end_time;
+	_time_get(&end_time);
+	uint32_t diff_time = end_time.SECONDS - start_time.SECONDS;
+	diff_time = (diff_time*1000) + (end_time.MILLISECONDS - start_time.MILLISECONDS);
+	printf("\r\n Loops %d took %d ms", loops, diff_time);
+
 }
 
 /* END os_tasks */

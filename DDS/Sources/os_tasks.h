@@ -50,19 +50,12 @@ extern "C" {
 #endif 
 
 //Message Pool Sizes
-#define CREATE_MSG_POOL_SIZE 128
-#define DELETE_MSG_POOL_SIZE 128
-#define RETURN_MSG_POOL_SIZE 32
 #define FINISHED_MSG_POOL_SIZE 32
 
 // Message Pool IDs
  _pool_id dd_message_pool;
 
 //QUEUE IDs
-#define CREATE_QUEUE_ID 		1
-#define DELETE_QUEUE_ID 		2
-#define RETURN_ACTIVE_QUEUE_ID 	3
-#define RETURN_OVERDUE_QUEUE_ID 4
 #define FINISHED_QUEUE_ID 		5
 
 #define TASK_STARTING_PRIORITY 10
@@ -71,11 +64,18 @@ typedef struct task_list{
 	uint32_t tid;
 	uint32_t task_type;
 	uint32_t absdeadline;
+	uint32_t execution_time;
 	struct task_list *next;
 	//struct task_list *prev;
 } TASK_LIST, * TASK_LIST_PTR;
 
-extern _task_id add_task_to_list(_task_id, uint32_t);
+typedef struct task_finsihed {
+	MESSAGE_HEADER_STRUCT 	HEADER;
+	_task_id 				tid;
+	uint32_t 				finishtime;
+} TASK_FINISHED, * TASK_FINISHED_PTR;
+
+extern _task_id add_task_to_list(_task_id, uint32_t, uint32_t);
 extern bool remove_from_task_list(_task_id);
 
 /*

@@ -284,7 +284,6 @@ void task_dd(os_task_param_t task_init_data)
 #ifdef PEX_USE_RTOS
   	while (1) {
 #endif
-  		timer++;
   		OSA_TimeDelay(100);
 
 #ifdef PEX_USE_RTOS   
@@ -305,23 +304,29 @@ void monitor_task(os_task_param_t task_init_data)
 {
 
 
-	uint32_t timerStep = 2000;
+	uint32_t timerStep = 200;
 
 	TIME_STRUCT elapsed_time;
 	uint32_t previous_time = 0;
 
+	uint32_t last_time = 0;
+
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
-	 //printf("Monitor running");
-	 if (timer >= 6667*5000){
+	  timer++;
+	 // printf("MNITORINGOSAIJHASJKF<JHKDFJHK");
+	 if (timer >= timerStep){
 		 _time_get_elapsed(&elapsed_time);
 
-		 uint32_t total_time = ((elapsed_time.SECONDS*1000 + elapsed_time.MILLISECONDS));
-		 //printf("\r\nTimer: %u", timer);
-		// printf("\r\nTotal Time: %u", total_time);
+		 uint32_t total_time = ((elapsed_time.SECONDS*1000 + elapsed_time.MILLISECONDS)) - last_time;
+		 last_time = total_time;
+		 printf("\r\n Total elapsed time: %d", total_time);
 		 uint32_t utilization = 100 * (5*timer) / total_time;
-		 printf("\r\n Utilization: %u PERCENT", 100-utilization);
+		 uint32_t utilization_percent = 100-utilization;
+		 if (utilization_percent > 100) utilization_percent = 100;
+		 printf("\r\n[Monitor] Overdue: %d  Completeted: %d", overdue_tasks, completed_tasks);
+		 printf("\r\n[Monitor] Utilization: %u PERCENT", utilization_percent);
 		 //printf("\r\n CPU Utilization = %u", utilization);
 		 timer = 0;
 		// previous_time = total_time;
@@ -329,7 +334,7 @@ void monitor_task(os_task_param_t task_init_data)
 	 }
 	 _time_delay_ticks(1);
 
-	// OSA_TimeDelay(1000);
+	 OSA_TimeDelay(1);
     
 #ifdef PEX_USE_RTOS   
   }
@@ -355,22 +360,11 @@ void p_task(os_task_param_t task_init_data)
   while (1) {
 #endif
     /* Write your code here ... */
+	  //__asm("wfi")
 	printf("\r\n-----------Starting Periodic Tasks-----------");
 	dd_tcreate(PERIODICTASK_TASK, 1000, 100);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 500, 300);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 500, 300);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 100, 50);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 50, 50);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 500, 300);
-	OSA_TimeDelay(1);
-	dd_tcreate(PERIODICTASK_TASK, 250, 100);
 	OSA_TimeDelay(2000);
-	printf("\r\n[Monitor] Overdue: %d  Completeted: %d", overdue_tasks, completed_tasks);
+
 	//print_list(otask_list_head);
     
 #ifdef PEX_USE_RTOS   
@@ -402,12 +396,6 @@ void Periodic_Task(os_task_param_t task_init_data)
 	} while ((current_time.SECONDS*1000) + current_time.MILLISECONDS < end_time);
 
 
-/*
-	_time_delay_ticks(1);
-	for(int i = 0; i < 6667*task_init_data; i++ ){
-		timer++;
-	}
-*/
 	dd_delete(_task_get_id());
 }
 

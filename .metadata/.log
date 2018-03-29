@@ -4019,3 +4019,29 @@ java.io.IOException: Pipe closed
 
 !ENTRY ilg.gnuarmeclipse.debug.gdbjtag 4 0 2018-03-29 00:27:34.654
 !MESSAGE Debug session 'DDS_Debug_Segger' already started. Terminate the first one before restarting.
+
+!ENTRY ilg.gnuarmeclipse.debug.gdbjtag 4 0 2018-03-29 00:52:42.435
+!MESSAGE Debug session 'DDS_Debug_Segger' already started. Terminate the first one before restarting.
+
+!ENTRY ilg.gnuarmeclipse.debug.gdbjtag 4 0 2018-03-29 00:55:20.678
+!MESSAGE Debug session 'DDS_Debug_Segger' already started. Terminate the first one before restarting.
+
+!ENTRY ilg.gnuarmeclipse.debug.gdbjtag 4 0 2018-03-29 01:00:04.851
+!MESSAGE Debug session 'DDS_Debug_Segger' already started. Terminate the first one before restarting.
+
+!ENTRY org.eclipse.debug.core 4 125 2018-03-29 01:01:16.152
+!MESSAGE Error logged from Debug Core: 
+!STACK 0
+java.io.IOException: Pipe closed
+	at java.io.PipedInputStream.read(Unknown Source)
+	at java.io.PipedInputStream.read(Unknown Source)
+	at java.io.BufferedInputStream.read1(Unknown Source)
+	at java.io.BufferedInputStream.read(Unknown Source)
+	at java.io.FilterInputStream.read(Unknown Source)
+	at org.eclipse.debug.internal.core.OutputStreamMonitor.read(OutputStreamMonitor.java:147)
+	at org.eclipse.debug.internal.core.OutputStreamMonitor.access$1(OutputStreamMonitor.java:137)
+	at org.eclipse.debug.internal.core.OutputStreamMonitor$1.run(OutputStreamMonitor.java:212)
+	at java.lang.Thread.run(Unknown Source)
+
+!ENTRY ilg.gnuarmeclipse.debug.gdbjtag 4 0 2018-03-29 01:06:41.966
+!MESSAGE Debug session 'DDS_Debug_Segger' already started. Terminate the first one before restarting.

@@ -56,6 +56,8 @@ void _mqx_idle_task
                 }
             }
         }
+
+
 #endif /* !defined(MQX_ENABLE_IDLE_LOOP) || MQX_ENABLE_IDLE_LOOP */
 #if MQX_ENABLE_LOW_POWER
         if (parameter)

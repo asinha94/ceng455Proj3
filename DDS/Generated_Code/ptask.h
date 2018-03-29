@@ -7,7 +7,7 @@
 **     Version     : Component 1.3.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-25, 13:41, # CodeGen: 15
+**     Date/Time   : 2018-03-28, 23:52, # CodeGen: 31
 **     Contents    :
 **         Init - osa_status_t ptask_Init(void);
 **
@@ -66,7 +66,7 @@
 /* ptask task stack size */  
 #define PTASK_TASK_STACK_SIZE          1024U
 /* ptask task priority value */  
-#define PTASK_TASK_PRIORITY            17U
+#define PTASK_TASK_PRIORITY            0U
 /*
 ** ===================================================================
 **     Method      :  Init (component OS_Task)

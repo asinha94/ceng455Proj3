@@ -15,7 +15,7 @@
 #include "rtos_main_task.h"
 #include <message.h>
 
-_task_id dd_tcreate(uint32_t, uint32_t);
+_task_id dd_tcreate(uint32_t, uint32_t, uint32_t);
 uint32_t dd_delete(_task_id);
 uint32_t dd_return_active_list(TASK_LIST_PTR *);
 uint32_t dd_return_overdue_list(TASK_LIST_PTR *);

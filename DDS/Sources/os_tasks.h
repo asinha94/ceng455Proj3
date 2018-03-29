@@ -58,13 +58,14 @@ extern "C" {
 //QUEUE IDs
 #define FINISHED_QUEUE_ID 		5
 
-#define TASK_STARTING_PRIORITY 10
+
+#define HIGHEST_PRIORITY 8
 
 typedef struct task_list{
 	uint32_t tid;
 	uint32_t task_type;
+	uint32_t reldeadline;
 	uint32_t absdeadline;
-	uint32_t execution_time;
 	struct task_list *next;
 	//struct task_list *prev;
 } TASK_LIST, * TASK_LIST_PTR;
@@ -76,7 +77,9 @@ typedef struct task_finsihed {
 } TASK_FINISHED, * TASK_FINISHED_PTR;
 
 extern _task_id add_task_to_list(_task_id, uint32_t, uint32_t);
-extern bool remove_from_task_list(_task_id);
+extern bool remove_from_task_list(_task_id, uint32_t);
+extern void get_active_head(TASK_FINISHED_PTR *);
+extern void get_overdue_head(TASK_FINISHED_PTR *);
 
 /*
 ** ===================================================================

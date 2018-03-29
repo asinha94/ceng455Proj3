@@ -59,7 +59,10 @@ static MUTEX_STRUCT task_exec_mutex;
 static TASK_LIST_PTR task_list_head = NULL;
 static TASK_LIST_PTR otask_list_head = NULL;
 
-int count = 0;
+
+int completed_tasks = 0;
+int overdue_tasks = 0;
+uint32_t timer = 0;
 
 void print_list(TASK_LIST_PTR iter) {
 	printf("\r\nPrinting List");
@@ -85,7 +88,7 @@ uint32_t create_active_list_copy(TASK_LIST_PTR * ptr_copy){
 		(*ptr_copy)->tid = active_head_iter->tid;
 		printf("\r\n Active Head TID: %u", active_head_iter->tid);
 		(*ptr_copy)->absdeadline = active_head_iter->absdeadline;
-		(*ptr_copy)->execution_time = active_head_iter->execution_time;
+		(*ptr_copy)->reldeadline = active_head_iter->reldeadline;
 		(*ptr_copy)->task_type = 0;
 		(*ptr_copy)->next = NULL;
 		if (copy_iter == NULL) {
@@ -108,12 +111,22 @@ uint32_t create_active_list_copy(TASK_LIST_PTR * ptr_copy){
 	return TRUE;
 }
 
-static void add_task_to_overdue_list(TASK_LIST_PTR task) {
-	/*add task to overdue list. doesn't need to be sorted*/
-	printf("\r\nI am Overdue");
+void get_active_head(TASK_FINISHED_PTR * ptr) {
+	*ptr = task_list_head;
 }
 
-_task_id add_task_to_list(_task_id tid, uint32_t deadline, uint32_t execution_time) {
+void get_overdue_head(TASK_FINISHED_PTR * ptr) {
+	*ptr = otask_list_head;
+}
+
+static void add_task_to_overdue_list(TASK_LIST_PTR task) {
+	/*add task to overdue list. doesn't need to be sorted*/
+	task->next = otask_list_head;
+	otask_list_head = task;
+
+}
+
+_task_id add_task_to_list(_task_id tid, uint32_t absdeadline, uint32_t reldeadline) {
 	int mut_error = _mutex_lock(&active_task_mutex);
 	if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
@@ -123,8 +136,8 @@ _task_id add_task_to_list(_task_id tid, uint32_t deadline, uint32_t execution_ti
 
 	TASK_LIST_PTR task_list_new = _mem_alloc(sizeof(TASK_LIST));
 	task_list_new->tid = tid;
-	task_list_new->absdeadline = deadline;
-	task_list_new->execution_time = execution_time;
+	task_list_new->absdeadline = absdeadline;
+	task_list_new->reldeadline = reldeadline;
 	task_list_new->task_type = 0;
 	task_list_new->next = NULL;
 	//task_list_new->prev = NULL;
@@ -135,6 +148,8 @@ _task_id add_task_to_list(_task_id tid, uint32_t deadline, uint32_t execution_ti
 	if (task_prev == NULL || task_prev->absdeadline >= task_list_new->absdeadline) {
 		task_list_new->next = task_list_head;
 		task_list_head = task_list_new;
+		uint32_t prev_priority = HIGHEST_PRIORITY + 1;
+		_task_set_priority(task_list_new->tid, HIGHEST_PRIORITY, &prev_priority);
 		mut_error = _mutex_unlock(&active_task_mutex);
 		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
 			printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
@@ -168,12 +183,10 @@ _task_id add_task_to_list(_task_id tid, uint32_t deadline, uint32_t execution_ti
 		_task_set_error(MQX_OK);
 		return 0;
 	}
-
 	return tid;
 }
 
-bool remove_from_task_list(_task_id tid) {
-
+bool remove_from_task_list(_task_id tid, uint32_t finish_time) {
 	int mut_error = _mutex_lock(&active_task_mutex);
 	if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Couldn't Lock active task mutex when removing from list. Error: 0x%x", _task_get_id(), _task_get_error());
@@ -209,8 +222,17 @@ bool remove_from_task_list(_task_id tid) {
 			task_list_head = task_iter->next;
 		}
 		ret_value = TRUE;
-		/* Add to overdue list here if necessary*/
-		_mem_free(task_iter);
+
+		if (finish_time > task_iter->absdeadline) {
+			printf("\r\n[%d] Task is overdue", task_iter->tid);
+		//	printf(". Overdue by %d ms", finish_time - task_iter->absdeadline);
+			add_task_to_overdue_list(task_iter);
+			overdue_tasks++;
+		} else {
+			printf("\r\n[%d] Task completed ahead of schedule", task_iter->tid);
+			completed_tasks++;
+			_mem_free(task_iter);
+		}
 	}
 
 	mut_error = _mutex_unlock(&active_task_mutex);
@@ -226,8 +248,6 @@ bool remove_from_task_list(_task_id tid) {
 
 void task_dd(os_task_param_t task_init_data)
 {
-	printf("starting task DD");
-
 	// Initialize Mutexes to default values
 	MUTEX_ATTR_STRUCT mutextattr;
 	if (_mutatr_init(&mutextattr) != MQX_EOK) {
@@ -258,42 +278,14 @@ void task_dd(os_task_param_t task_init_data)
 	}
 
 	printf("\r\nStarting Scheduler");
+	int prev_priority = HIGHEST_PRIORITY + 1;
+
 
 #ifdef PEX_USE_RTOS
   	while (1) {
 #endif
-
-
-		//Set the priority of the leading task
-		int mut_error = _mutex_lock(&active_task_mutex);
-		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
-			printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
-			_task_set_error(MQX_OK);
-		}
-		TASK_LIST_PTR task_list_head_temp = task_list_head;
-
-		while(task_list_head_temp != NULL ){
-					//check current tasks in task_list
-
-			int priority = TASK_STARTING_PRIORITY;
-			//increase priority of task at head
-			while(task_list_head_temp != NULL){
-				_mqx_uint_ptr prev_priority;
-				_task_get_priority(task_list_head_temp->tid, prev_priority);
-				_task_set_priority(task_list_head_temp->tid, priority, prev_priority);
-				task_list_head_temp = task_list_head_temp->next;
-				priority++;
-			}
-
-		}
-
-		mut_error = _mutex_unlock(&active_task_mutex);
-		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
-			printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
-			_task_set_error(MQX_OK);
-		}
-
-		OSA_TimeDelay(100);
+  		timer++;
+  		OSA_TimeDelay(100);
 
 #ifdef PEX_USE_RTOS   
   }
@@ -312,7 +304,7 @@ void task_dd(os_task_param_t task_init_data)
 void monitor_task(os_task_param_t task_init_data)
 {
 
-	uint32_t timer = 0;
+
 	uint32_t timerStep = 2000;
 
 	TIME_STRUCT elapsed_time;
@@ -321,24 +313,23 @@ void monitor_task(os_task_param_t task_init_data)
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
-
-	 timer++;
-
-	 if (timer == timerStep){
+	 //printf("Monitor running");
+	 if (timer >= 6667*5000){
 		 _time_get_elapsed(&elapsed_time);
 
 		 uint32_t total_time = ((elapsed_time.SECONDS*1000 + elapsed_time.MILLISECONDS));
-		 printf("\r\nTimer: %u", timer);
-		 printf("\r\nTotal Time: %u", total_time);
+		 //printf("\r\nTimer: %u", timer);
+		// printf("\r\nTotal Time: %u", total_time);
 		 uint32_t utilization = 100 * (5*timer) / total_time;
 		 printf("\r\n Utilization: %u PERCENT", 100-utilization);
 		 //printf("\r\n CPU Utilization = %u", utilization);
-		 timerStep += timerStep;
+		 timer = 0;
 		// previous_time = total_time;
 		 utilization = 0;
 	 }
-
 	 _time_delay_ticks(1);
+
+	// OSA_TimeDelay(1000);
     
 #ifdef PEX_USE_RTOS   
   }
@@ -357,27 +348,30 @@ void monitor_task(os_task_param_t task_init_data)
 void p_task(os_task_param_t task_init_data)
 {
 
-	printf("\r\nStarting Periodic Task");
+
 	TASK_LIST_PTR active_list = NULL;
 	TASK_LIST_PTR active_iter = NULL;
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
     /* Write your code here ... */
-
-	dd_tcreate(PERIODICTASK_TASK, 150);
-	dd_tcreate(PERIODICTASK_TASK, 200);
-	dd_tcreate(PERIODICTASK_TASK, 1000);
-	dd_tcreate(PERIODICTASK_TASK, 150);
-	dd_tcreate(PERIODICTASK_TASK, 200);
-	dd_tcreate(PERIODICTASK_TASK, 1500);
-	dd_tcreate(PERIODICTASK_TASK, 200);
-	dd_tcreate(PERIODICTASK_TASK, 1000);
-	dd_tcreate(PERIODICTASK_TASK, 150);
-	dd_tcreate(PERIODICTASK_TASK, 2000);
-
-	OSA_TimeDelay(1000);
-
+	printf("\r\n-----------Starting Periodic Tasks-----------");
+	dd_tcreate(PERIODICTASK_TASK, 1000, 100);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 500, 300);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 500, 300);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 100, 50);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 50, 50);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 500, 300);
+	OSA_TimeDelay(1);
+	dd_tcreate(PERIODICTASK_TASK, 250, 100);
+	OSA_TimeDelay(2000);
+	printf("\r\n[Monitor] Overdue: %d  Completeted: %d", overdue_tasks, completed_tasks);
+	//print_list(otask_list_head);
     
 #ifdef PEX_USE_RTOS   
   }
@@ -396,21 +390,25 @@ void p_task(os_task_param_t task_init_data)
 void Periodic_Task(os_task_param_t task_init_data)
 {
 
-	printf("\r\n[%d] Starting New Task: absdeadline == %u", _task_get_id(), task_init_data);
-	TIME_STRUCT start_time;
-	_time_get(&start_time);
+	//printf("\r\n[%d] Starting New Task: absdeadline == %u", _task_get_id(), task_init_data);
+	TIME_STRUCT end_time_struct;
+	_time_get(&end_time_struct);
+	uint32_t end_time = (end_time_struct.SECONDS*1000) + end_time_struct.MILLISECONDS + task_init_data;
 
-	int ticker = 0;
 	TIME_STRUCT current_time;
 	do {
 		_time_get(&current_time);
 		_time_delay_ticks(1);
-	} while ((current_time.SECONDS*1000) + current_time.MILLISECONDS < task_init_data);
+	} while ((current_time.SECONDS*1000) + current_time.MILLISECONDS < end_time);
 
 
-	printf("\r\n Just Finished %d", _task_get_id());
-	//printf("\r\n Loops %d took %d ms", loops, diff_time);
-
+/*
+	_time_delay_ticks(1);
+	for(int i = 0; i < 6667*task_init_data; i++ ){
+		timer++;
+	}
+*/
+	dd_delete(_task_get_id());
 }
 
 /* END os_tasks */

@@ -8,7 +8,7 @@
 **     Repository  : KSDK 1.3.0
 **     Datasheet   : K64P144M120SF5RM, Rev.2, January 2014
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-28, 20:47, # CodeGen: 23
+**     Date/Time   : 2018-03-29, 17:20, # CodeGen: 38
 **     Abstract    :
 **
 **     Settings    :
@@ -118,6 +118,19 @@ void Components_Init(void)
   /*! ptask Auto initialization start */ 
   (void)ptask_Init();
   /*! ptask Auto initialization end */                       
+  /*! ptask_2 Auto initialization start */ 
+  (void)ptask_2_Init();
+  /*! ptask_2 Auto initialization end */                       
+  /*! ptask3 Auto initialization start */ 
+  (void)ptask3_Init();
+  /*! ptask3 Auto initialization end */                       
+  /*! gpio1 Auto initialization start */
+  GPIO_DRV_Init(gpio1_InpConfig0,gpio1_OutConfig0);
+  /*! gpio1 Auto initialization end */
+  
+  /*! apetask Auto initialization start */ 
+  (void)apetask_Init();
+  /*! apetask Auto initialization end */                       
 }
 #endif /* CPU_COMPONENTS_INIT */
 

@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 01.00, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-28, 22:34, # CodeGen: 29
+**     Date/Time   : 2018-03-29, 17:20, # CodeGen: 38
 **
 **     Copyright : 1997 - 2015 Freescale Semiconductor, Inc. 
 **     All Rights Reserved.
@@ -62,6 +62,9 @@
 #include "MonitorTask.h"
 #include "ptask.h"
 #include "PeriodicTask.h"
+#include "ptask_2.h"
+#include "ptask3.h"
+#include "apetask.h"
 extern void * kernel_data_prv;
 #if MQXCFG_PREALLOCATED_SYSTEM_STACKS
 extern uint8_t mqx_interrupt_stack[];
@@ -127,6 +130,39 @@ const TASK_TEMPLATE_STRUCT MQX_template_list[] =
     /* Task name                      */  PERIODICTASK_TASK_NAME,
     /* Task attributes                */  (0),
     /* Task parameter                 */  (uint32_t)(0),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: ptask_2 */
+  {
+    /* Task number                    */  PTASK_2_TASK,
+    /* Entry point                    */  (TASK_FPTR)p_task_2,
+    /* Stack size                     */  PTASK_2_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PTASK_2_TASK_PRIORITY)),
+    /* Task name                      */  PTASK_2_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: ptask3 */
+  {
+    /* Task number                    */  PTASK3_TASK,
+    /* Entry point                    */  (TASK_FPTR)p_task_3,
+    /* Stack size                     */  PTASK3_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(PTASK3_TASK_PRIORITY)),
+    /* Task name                      */  PTASK3_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
+    /* Task time slice                */  (uint32_t)(0U)
+  },       
+  /* Task: apetask */
+  {
+    /* Task number                    */  APETASK_TASK,
+    /* Entry point                    */  (TASK_FPTR)ape_task,
+    /* Stack size                     */  APETASK_TASK_STACK_SIZE,
+    /* Task priority                  */  (PRIORITY_OSA_TO_RTOS(APETASK_TASK_PRIORITY)),
+    /* Task name                      */  APETASK_TASK_NAME,
+    /* Task attributes                */  (0),
+    /* Task parameter                 */  (uint32_t)(NULL),
     /* Task time slice                */  (uint32_t)(0U)
   },       
   TASK_TEMPLATE_LIST_END

@@ -13,7 +13,7 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t relative_deadline, uint32_
 	TIME_STRUCT creation_time;
 	_time_get(&creation_time);
 	uint32_t absolute_deadline = (creation_time.SECONDS*1000) + creation_time.MILLISECONDS + relative_deadline;
-
+	//printf("\r\n Absolute deadline == %d", absolute_deadline);
 	// Start Task
 	_task_id new_task_id = _task_create(0, template_index, execution_time);
 	OSA_TimeDelay(1);
@@ -23,7 +23,7 @@ _task_id dd_tcreate(uint32_t template_index, uint32_t relative_deadline, uint32_
 		return FALSE;
 	}
 
-	printf("\r\n\[Generator] Started New Task == %d", new_task_id);
+	//printf("\r\n\[Generator] Started New Task == %d", new_task_id);
 	return add_task_to_list(new_task_id, absolute_deadline, relative_deadline);
 }
 

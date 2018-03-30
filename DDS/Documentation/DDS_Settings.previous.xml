@@ -219,10 +219,49 @@
       <EmptySection_DummyValue />
     </Events>
   </Bean>
-  <Bean name="Task1" type="OS_Task">
+  <Bean name="PeriodicTask" type="OS_Task">
     <Enabled v="Y" />
     <Properties>
-      <Name v="Task1" />
+      <Name v="PeriodicTask" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="ptask_2" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="ptask_2" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="ptask3" type="OS_Task">
+    <Enabled v="Y" />
+    <Properties>
+      <Name v="ptask3" />
+      <Component_version v="1.3.0" />
+    </Properties>
+    <Methods>
+      <EmptySection_DummyValue />
+    </Methods>
+    <Events>
+      <EmptySection_DummyValue />
+    </Events>
+  </Bean>
+  <Bean name="gpio1" type="fsl_gpio">
+    <Enabled v="Y" />
+    <Properties>
+      <Component_name v="gpio1" />
       <Component_version v="1.3.0" />
     </Properties>
     <Methods>

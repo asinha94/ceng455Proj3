@@ -43,6 +43,10 @@
 #include "MonitorTask.h"
 #include "ptask.h"
 #include "PeriodicTask.h"
+#include "ptask_2.h"
+#include "ptask3.h"
+#include "gpio1.h"
+#include "apetask.h"
 #include <message.h>
 
 #ifdef __cplusplus
@@ -125,6 +129,39 @@ void p_task(os_task_param_t task_init_data);
 ** ===================================================================
 */
 void Periodic_Task(os_task_param_t task_init_data);
+
+/*
+** ===================================================================
+**     Callback    : p_task_2
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void p_task_2(os_task_param_t task_init_data);
+
+/*
+** ===================================================================
+**     Callback    : p_task_3
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void p_task_3(os_task_param_t task_init_data);
+
+/*
+** ===================================================================
+**     Callback    : ape_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void ape_task(os_task_param_t task_init_data);
 
 /* END os_tasks */
 

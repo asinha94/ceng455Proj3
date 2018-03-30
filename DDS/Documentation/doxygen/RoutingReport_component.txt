@@ -460,7 +460,7 @@
 			</tr>
 			<tr>
 				<td>87</td><td>PTC15/UART4_TX/FB_AD24</td><td>J199_4</td>
-				<td></td><td></td><td></td><td></td>
+				<td bgcolor='#F7DCFF'>PTC</td><td bgcolor='#F7DCFF'>port15</td><td bgcolor='#F7DCFF'>alt1</td><td bgcolor='#F7DCFF'>Input</td>
 			</tr>
 			<tr>
 				<td>88</td><td>VSS131</td><td><small><i>same</i></small></td>
@@ -499,9 +499,10 @@
 				<td></td><td></td><td></td><td></td>
 			</tr>
 			<tr>
-				<td>97</td><td>PTD4/LLWU_P14/SPI0_PCS1/UART0_RTS_b/FTM0_CH4/FB_AD2/EWM_IN/SPI1_PCS0</td><td>J6_4</td>
-				<td></td><td></td><td></td><td></td>
+				<td rowspan='2'>97</td><td rowspan='2'>PTD4/LLWU_P14/SPI0_PCS1/UART0_RTS_b/FTM0_CH4/FB_AD2/EWM_IN/SPI1_PCS0</td><td rowspan='2'>J6_4</td>
+				<td bgcolor='#F7DCFF'>PTD</td><td bgcolor='#F7DCFF'>port4</td><td bgcolor='#F7DCFF'>alt1</td><td bgcolor='#F7DCFF'>Output</td>
 			</tr>
+			<tr bgcolor='#CCB6A0'><td>LLWU</td><td>llwu_wakeup14</td><td>alt1</td><td>Input</td></tr>
 			<tr>
 				<td>98</td><td>ADC0_SE6b/PTD5/SPI0_PCS2/UART0_CTS_b/UART0_COL_b/FTM0_CH5/FB_AD1/EWM_OUT_b/SPI1_SCK</td><td>J6_5</td>
 				<td bgcolor='#F8FF9A'>ADC0</td><td bgcolor='#F8FF9A'>adc_seb6</td><td bgcolor='#F8FF9A'>alt0</td><td bgcolor='#F8FF9A'>Input</td>
@@ -2196,7 +2197,7 @@
 			</tr>
 			<tr>
 				<td>87</td><td>PTC15/UART4_TX/FB_AD24</td><td>J199_4</td>
-				<td></td><td></td><td></td><td></td>
+				<td bgcolor='#F7DCFF'>PTC</td><td bgcolor='#F7DCFF'>port15</td><td bgcolor='#F7DCFF'>alt1</td><td bgcolor='#F7DCFF'>Input</td>
 			</tr>
 			<tr>
 				<td>88</td><td>VSS131</td><td><small><i>same</i></small></td>
@@ -2235,9 +2236,10 @@
 				<td></td><td></td><td></td><td></td>
 			</tr>
 			<tr>
-				<td>97</td><td>PTD4/LLWU_P14/SPI0_PCS1/UART0_RTS_b/FTM0_CH4/FB_AD2/EWM_IN/SPI1_PCS0</td><td>J6_4</td>
-				<td></td><td></td><td></td><td></td>
+				<td rowspan='2'>97</td><td rowspan='2'>PTD4/LLWU_P14/SPI0_PCS1/UART0_RTS_b/FTM0_CH4/FB_AD2/EWM_IN/SPI1_PCS0</td><td rowspan='2'>J6_4</td>
+				<td bgcolor='#F7DCFF'>PTD</td><td bgcolor='#F7DCFF'>port4</td><td bgcolor='#F7DCFF'>alt1</td><td bgcolor='#F7DCFF'>Output</td>
 			</tr>
+			<tr bgcolor='#CCB6A0'><td>LLWU</td><td>llwu_wakeup14</td><td>alt1</td><td>Input</td></tr>
 			<tr>
 				<td>98</td><td>ADC0_SE6b/PTD5/SPI0_PCS2/UART0_CTS_b/UART0_COL_b/FTM0_CH5/FB_AD1/EWM_OUT_b/SPI1_SCK</td><td>J6_5</td>
 				<td bgcolor='#F8FF9A'>ADC0</td><td bgcolor='#F8FF9A'>adc_seb6</td><td bgcolor='#F8FF9A'>alt0</td><td bgcolor='#F8FF9A'>Input</td>

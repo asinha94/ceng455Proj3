@@ -43,6 +43,10 @@
 #include "MonitorTask.h"
 #include "ptask.h"
 #include "PeriodicTask.h"
+#include "ptask_2.h"
+#include "ptask3.h"
+#include "gpio1.h"
+#include "apetask.h"
 
 #ifdef __cplusplus
 extern "C" {

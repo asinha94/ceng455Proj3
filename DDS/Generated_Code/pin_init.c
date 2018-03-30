@@ -7,7 +7,7 @@
 **     Version     : Component 1.2.0, Driver 1.4, CPU db: 3.00.000
 **     Repository  : KSDK 1.3.0
 **     Compiler    : GNU C Compiler
-**     Date/Time   : 2018-03-28, 20:47, # CodeGen: 23
+**     Date/Time   : 2018-03-29, 17:10, # CodeGen: 37
 **     Abstract    :
 **
 **     Settings    :
@@ -1419,6 +1419,52 @@ void deinit_enet_pins(uint32_t instance)
 {
   PORT_HAL_SetMuxMode(PORTA,18UL,kPortPinDisabled);
 }
+/*FUNCTION**********************************************************************
+*
+* Function Name : init_gpio_pins
+* Description   : GPIO method sets registers according routing settings.
+* Call this method code to route desired pins.
+*END**************************************************************************/
+void init_gpio_pins(uint32_t instance)
+{
+  switch(instance) {    
+    case PORTC_IDX:                     /* PORTC_IDX */
+      /* Affects PORTC_PCR15 register */
+      PORT_HAL_SetPullMode(PORTC,15UL,kPortPullDown);
+      PORT_HAL_SetMuxMode(PORTC,15UL,kPortMuxAsGpio);
+      PORT_HAL_SetPullCmd(PORTC,15UL,true);
+      PORT_HAL_SetPassiveFilterCmd(PORTC,15UL,true);
+      break;
+    case PORTD_IDX:                     /* PORTD_IDX */
+      /* Affects PORTD_PCR4 register */
+      PORT_HAL_SetDriveStrengthMode(PORTD,4UL,kPortLowDriveStrength);  
+      PORT_HAL_SetMuxMode(PORTD,4UL,kPortMuxAsGpio);
+      PORT_HAL_SetSlewRateMode(PORTD,4UL,kPortSlowSlewRate);
+      PORT_HAL_SetOpenDrainCmd(PORTD,4UL,true);
+      break;
+    default:
+      break;
+  }
+}
+/*FUNCTION**********************************************************************
+*
+* Function Name : deinit_gpio_pins
+* Description   : GPIO method sets registers according routing settings.
+* Call this method code to disable routing of desired pins.
+*END**************************************************************************/
+void deinit_gpio_pins(uint32_t instance)
+{
+  switch(instance) {    
+    case PORTC_IDX:                     /* PORTC_IDX */
+      PORT_HAL_SetMuxMode(PORTC,15UL,kPortPinDisabled);
+      break;
+    case PORTD_IDX:                     /* PORTD_IDX */
+      PORT_HAL_SetMuxMode(PORTD,4UL,kPortPinDisabled);
+      break;
+    default:
+      break;
+  }
+}
 
 /*FUNCTION**********************************************************************
 *
@@ -1449,6 +1495,31 @@ void deinit_jtag_pins(uint32_t instance)
   PORT_HAL_SetMuxMode(PORTA,1UL,kPortPinDisabled);
   PORT_HAL_SetMuxMode(PORTA,2UL,kPortPinDisabled);
   PORT_HAL_SetMuxMode(PORTA,3UL,kPortPinDisabled);
+}
+
+/*FUNCTION**********************************************************************
+*
+* Function Name : init_llwu_pins
+* Description   : LLWU method sets registers according routing settings.
+* Call this method code to route desired pins.
+*END**************************************************************************/
+void init_llwu_pins(uint32_t instance)
+{
+  /* Affects PORTD_PCR4 register */
+  PORT_HAL_SetDriveStrengthMode(PORTD,4UL,kPortLowDriveStrength);  
+  PORT_HAL_SetMuxMode(PORTD,4UL,kPortMuxAsGpio);
+  PORT_HAL_SetSlewRateMode(PORTD,4UL,kPortSlowSlewRate);
+  PORT_HAL_SetOpenDrainCmd(PORTD,4UL,true);
+}
+/*FUNCTION**********************************************************************
+*
+* Function Name : deinit_llwu_pins
+* Description   : LLWU method sets registers according routing settings.
+* Call this method code to disable routing of desired pins.
+*END**************************************************************************/
+void deinit_llwu_pins(uint32_t instance)
+{
+  PORT_HAL_SetMuxMode(PORTD,4UL,kPortPinDisabled);
 }
 
 /*FUNCTION**********************************************************************

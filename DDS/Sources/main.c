@@ -44,6 +44,10 @@
 #include "MonitorTask.h"
 #include "ptask.h"
 #include "PeriodicTask.h"
+#include "ptask_2.h"
+#include "ptask3.h"
+#include "gpio1.h"
+#include "apetask.h"
 #if CPU_INIT_CONFIG
   #include "Init_Config.h"
 #endif
@@ -57,6 +61,7 @@ int main(void)
 
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
+  //hardware_init();
   /*** End of Processor Expert internal initialization.                    ***/
 
   /* Write your code here */

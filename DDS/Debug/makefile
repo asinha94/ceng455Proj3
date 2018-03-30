@@ -36,9 +36,11 @@ RM := rm -rf
 -include SDK/platform/hal/src/osc/subdir.mk
 -include SDK/platform/hal/src/mpu/subdir.mk
 -include SDK/platform/hal/src/mcg/subdir.mk
+-include SDK/platform/hal/src/gpio/subdir.mk
 -include SDK/platform/drivers/src/uart/subdir.mk
 -include SDK/platform/drivers/src/rtc/subdir.mk
 -include SDK/platform/drivers/src/mpu/subdir.mk
+-include SDK/platform/drivers/src/gpio/subdir.mk
 -include SDK/platform/devices/MK64F12/startup/gcc/subdir.mk
 -include SDK/platform/devices/MK64F12/startup/subdir.mk
 -include SDK/platform/devices/subdir.mk
@@ -87,7 +89,7 @@ all: DDS.elf secondary-outputs
 DDS.elf: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: Cross ARM C++ Linker'
-	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -Wall  -g3 -T "C:/Users/asinha/Downloads/ceng455proj3/DDS/Project_Settings/Linker_Files/ProcessorExpert.ld" -Xlinker --gc-sections -L"C:/Users/asinha/Downloads/ceng455proj3/DDS/Project_Settings/Linker_Files" -Wl,-Map,"DDS.map" -lgcc -lc -lsupc++ -lm -specs=nosys.specs -nostartfiles -Xlinker -z -Xlinker muldefs -Xlinker -static -o "DDS.elf" $(OBJS) $(USER_OBJS) $(LIBS)
+	arm-none-eabi-g++ -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16 -O0 -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -Wall  -g3 -T "C:/Users/asinha/Downloads/ceng455Proj3/DDS/Project_Settings/Linker_Files/ProcessorExpert.ld" -Xlinker --gc-sections -L"C:/Users/asinha/Downloads/ceng455Proj3/DDS/Project_Settings/Linker_Files" -Wl,-Map,"DDS.map" -lgcc -lc -lsupc++ -lm -specs=nosys.specs -nostartfiles -Xlinker -z -Xlinker muldefs -Xlinker -static -o "DDS.elf" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

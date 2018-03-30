@@ -33,6 +33,10 @@
 #include "os_tasks.h"
 #include "access_functions.h"
 #include "Mutex.h"
+#include "fsl_device_registers.h"
+#include "board.h"
+#include "gpio1.h"
+#include <event.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -59,7 +63,8 @@ static MUTEX_STRUCT task_exec_mutex;
 static TASK_LIST_PTR task_list_head = NULL;
 static TASK_LIST_PTR otask_list_head = NULL;
 
-
+int flag = 0;
+int monitorflag = 0;
 int completed_tasks = 0;
 int overdue_tasks = 0;
 uint32_t timer = 0;
@@ -177,6 +182,13 @@ _task_id add_task_to_list(_task_id tid, uint32_t absdeadline, uint32_t reldeadli
 	}
 	*/
 
+	uint32_t prev_priority;
+	uint32_t head_priority = _task_get_priority(task_list_head->tid,&prev_priority);
+	if(task_list_head != NULL && head_priority != HIGHEST_PRIORITY){
+		uint32_t prev_priority = HIGHEST_PRIORITY + 1;
+		_task_set_priority(task_list_head->tid, HIGHEST_PRIORITY, &prev_priority);
+	}
+
 	mut_error = _mutex_unlock(&active_task_mutex);
 	if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
 		printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
@@ -223,8 +235,8 @@ bool remove_from_task_list(_task_id tid, uint32_t finish_time) {
 		}
 		ret_value = TRUE;
 
-		if (finish_time > task_iter->absdeadline) {
-			printf("\r\n[%d] Task is overdue", task_iter->tid);
+		if (finish_time > task_iter->absdeadline * 1.01) {
+			printf("\r\n[%d] Task is overdue: Deadline: %d . Finish Time: %d", task_iter->tid, task_iter->absdeadline,finish_time);
 		//	printf(". Overdue by %d ms", finish_time - task_iter->absdeadline);
 			add_task_to_overdue_list(task_iter);
 			overdue_tasks++;
@@ -233,6 +245,13 @@ bool remove_from_task_list(_task_id tid, uint32_t finish_time) {
 			completed_tasks++;
 			_mem_free(task_iter);
 		}
+	}
+
+	uint32_t prev_priority;
+	uint32_t head_priority = _task_get_priority(task_list_head->tid,&prev_priority);
+	if(task_list_head != NULL && head_priority != HIGHEST_PRIORITY){
+		uint32_t prev_priority = HIGHEST_PRIORITY + 1;
+		_task_set_priority(task_list_head->tid, HIGHEST_PRIORITY, &prev_priority);
 	}
 
 	mut_error = _mutex_unlock(&active_task_mutex);
@@ -304,16 +323,20 @@ void monitor_task(os_task_param_t task_init_data)
 {
 
 
-	uint32_t timerStep = 200;
+	uint32_t timerStep = 80;
 
 	TIME_STRUCT elapsed_time;
 	uint32_t previous_time = 0;
 
 	uint32_t last_time = 0;
 
+	uint32_t total_elapsed = 0;
+
 #ifdef PEX_USE_RTOS
   while (1) {
 #endif
+
+	  /*
 	  timer++;
 	 // printf("MNITORINGOSAIJHASJKF<JHKDFJHK");
 	 if (timer >= timerStep){
@@ -333,9 +356,75 @@ void monitor_task(os_task_param_t task_init_data)
 		 utilization = 0;
 	 }
 	 _time_delay_ticks(1);
+	*/
 
-	 OSA_TimeDelay(1);
-    
+	 //OSA_TimeDelay(1);
+	 // printf("monitor");
+	  /*
+		int mut_error = _mutex_lock(&active_task_mutex);
+		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+			printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+			_task_set_error(MQX_OK);
+			return 0;
+		}
+*/
+	  if(flag == 1){
+
+			int mut_error = _mutex_lock(&active_task_mutex);
+			if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+				printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+				_task_set_error(MQX_OK);
+				return 0;
+			}
+
+		TIME_STRUCT end_time_struct;
+		_time_get(&end_time_struct);
+		uint32_t start_time = (end_time_struct.SECONDS*1000) + end_time_struct.MILLISECONDS;
+		//printf("\r\n MONITOR started at: %d", end_time);
+
+	  timer++;
+	  if (timer >= timerStep){
+		  _time_get_elapsed(&elapsed_time);
+		  uint32_t total_time = ((elapsed_time.SECONDS*1000 + elapsed_time.MILLISECONDS));
+		  uint32_t utilization = 100 * (total_elapsed) / total_time;
+		  uint32_t utilization_percent = 100-utilization;
+		 // printf("\r\n[Monitor] Total time elapsed: %d", total_time);
+		 // printf("\r\n[Monitor] Total monitor task run time: %d", total_elapsed);
+		  printf("\r\n[Monitor] Utilization: %u PERCENT", utilization_percent);
+		//  printf("\r\n[Monitor] Overdue: %d  Completeted: %d", overdue_tasks, completed_tasks);
+		  print_list(otask_list_head);
+		  timer = 0;
+	  }
+
+	  //Including computation time theis monitor task takes 9MS per iteration
+
+
+	  _time_delay_ticks(1);
+	 // OSA_TimeDelay(5);
+
+	 _time_get(&end_time_struct);
+	 uint32_t end_time = (end_time_struct.SECONDS*1000) + end_time_struct.MILLISECONDS;
+	 //printf("\r\n MONITOR ended at: %d", end_time);
+
+	 total_elapsed = total_elapsed + (end_time - start_time);
+
+		mut_error = _mutex_unlock(&active_task_mutex);
+		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+			printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+			_task_set_error(MQX_OK);
+			return 0;
+		}
+
+	  }
+	 /*
+		mut_error = _mutex_unlock(&active_task_mutex);
+		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+			printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+			_task_set_error(MQX_OK);
+			return 0;
+		}
+
+	*/
 #ifdef PEX_USE_RTOS   
   }
 #endif    
@@ -362,8 +451,21 @@ void p_task(os_task_param_t task_init_data)
     /* Write your code here ... */
 	  //__asm("wfi")
 	printf("\r\n-----------Starting Periodic Tasks-----------");
+/*
+	dd_tcreate(PERIODICTASK_TASK, 2200, 2000);
+	dd_tcreate(PERIODICTASK_TASK, 1000, 200);
+	dd_tcreate(PERIODICTASK_TASK, 1000, 200);
+	dd_tcreate(PERIODICTASK_TASK, 2100, rand() % 100);
+	*/
+/*
 	dd_tcreate(PERIODICTASK_TASK, 1000, 100);
-	OSA_TimeDelay(2000);
+	OSA_TimeDelay(1000);
+*/
+
+
+    dd_tcreate(PERIODICTASK_TASK, 800, 300);
+    OSA_TimeDelay(1000);
+
 
 	//print_list(otask_list_head);
     
@@ -383,20 +485,158 @@ void p_task(os_task_param_t task_init_data)
 */
 void Periodic_Task(os_task_param_t task_init_data)
 {
+	uint32_t total_elapsed = 0;
+	TIME_STRUCT current_time;
 
 	//printf("\r\n[%d] Starting New Task: absdeadline == %u", _task_get_id(), task_init_data);
-	TIME_STRUCT end_time_struct;
-	_time_get(&end_time_struct);
-	uint32_t end_time = (end_time_struct.SECONDS*1000) + end_time_struct.MILLISECONDS + task_init_data;
+	//TIME_STRUCT end_time_struct;
+	//_time_get(&end_time_struct);
+	//uint32_t end_time = (end_time_struct.SECONDS*1000) + end_time_struct.MILLISECONDS + task_init_data;
+	flag = 1;
 
-	TIME_STRUCT current_time;
 	do {
-		_time_get(&current_time);
+
+		int mut_error = _mutex_lock(&active_task_mutex);
+		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+			printf("\r\n[%d] Couldn't Lock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+			_task_set_error(MQX_OK);
+			return 0;
+		}
+
+		TIME_STRUCT start_time_struct;
+		_time_get(&start_time_struct);
+		uint32_t start_time = (start_time_struct.SECONDS*1000) + start_time_struct.MILLISECONDS;
+		//printf("\r\n [%d] TASK started at: %d", _task_get_id(), start_time);
+
+
+		//_time_get(&current_time);
+		//OSA time delay 5 = 9ms including computation time of periodic task
+		//Including computation time this loop takes 10ms
+
+		//OSA_TimeDelay(5);
 		_time_delay_ticks(1);
-	} while ((current_time.SECONDS*1000) + current_time.MILLISECONDS < end_time);
+
+		_time_get(&start_time_struct);
+		 uint32_t end_time = (start_time_struct.SECONDS*1000) + start_time_struct.MILLISECONDS;
+		//printf("\r\n [%d] TASK Finished at: %d", _task_get_id(), end_time);
+
+		total_elapsed = total_elapsed + (end_time - start_time);
+
+		mut_error = _mutex_unlock(&active_task_mutex);
+		if (mut_error != MQX_EOK || _task_get_error() != MQX_EOK) {
+			printf("\r\n[%d] Couldn't unlock active task mutex when adding to the list. Error: 0x%x", _task_get_id(), _task_get_error());
+			_task_set_error(MQX_OK);
+			return 0;
+		}
 
 
+	} while (total_elapsed < task_init_data);
+
+	flag = 0;
 	dd_delete(_task_get_id());
+}
+
+/*
+** ===================================================================
+**     Callback    : p_task_2
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void p_task_2(os_task_param_t task_init_data)
+{
+  /* Write your local variable definition here */
+  
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+	  /*
+	dd_tcreate(PERIODICTASK_TASK, 500, 300);
+    OSA_TimeDelay(500);
+
+*/
+
+    dd_tcreate(PERIODICTASK_TASK, 1000, 350);
+    OSA_TimeDelay(1000);
+
+   
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
+}
+
+/*
+** ===================================================================
+**     Callback    : p_task_3
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void p_task_3(os_task_param_t task_init_data)
+{
+  /* Write your local variable definition here */
+  
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+/*
+		dd_tcreate(PERIODICTASK_TASK, 250, 100);
+	    OSA_TimeDelay(250);
+	    */
+
+	    dd_tcreate(PERIODICTASK_TASK, 300, 50);
+	    OSA_TimeDelay(300);
+
+
+	    /* Example code (for task release) */
+   
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
+}
+
+/*
+** ===================================================================
+**     Callback    : ape_task
+**     Description : Task function entry.
+**     Parameters  :
+**       task_init_data - OS task parameter
+**     Returns : Nothing
+** ===================================================================
+*/
+void ape_task(os_task_param_t task_init_data)
+{
+  /* Write your local variable definition here */
+  
+#ifdef PEX_USE_RTOS
+  while (1) {
+#endif
+    /* Write your code here ... */
+    
+	  	//printf("\r\n [%d] APERIODIC TASK RUNNING -------------------", _task_get_id());
+	   // dd_tcreate(PERIODICTASK_TASK, 100 + rand() % 100, rand() % 100);
+	   // OSA_TimeDelay(rand() % 10000);                /* Example code (for task release) */
+	  OSA_TimeDelay(500);
+    
+    
+    
+#ifdef PEX_USE_RTOS   
+  }
+#endif    
 }
 
 /* END os_tasks */

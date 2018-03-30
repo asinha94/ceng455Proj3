@@ -54,9 +54,11 @@ SDK/platform/hal/src/port \
 SDK/platform/hal/src/osc \
 SDK/platform/hal/src/mpu \
 SDK/platform/hal/src/mcg \
+SDK/platform/hal/src/gpio \
 SDK/platform/drivers/src/uart \
 SDK/platform/drivers/src/rtc \
 SDK/platform/drivers/src/mpu \
+SDK/platform/drivers/src/gpio \
 SDK/platform/devices \
 SDK/platform/devices/MK64F12/startup \
 SDK/platform/devices/MK64F12/startup/gcc \
